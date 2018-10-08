@@ -117,8 +117,6 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
                 })
             }
             
-            
-            
             if let result = result {
                 let bestString = result.bestTranscription.formattedString
                 
