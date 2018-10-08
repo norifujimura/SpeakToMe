@@ -162,7 +162,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
                 //update shown text if transcript is well done.
                 //otherwise do nothing
                 
-                if segments.count > 1 {
+                if self.data.count > 0 {
                     let st=NSMutableAttributedString(string:"")
                     for s in self.data {
                         //create color attribute
