@@ -34,9 +34,10 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         var pos:String="";
         var url:String="";
         var isError:Bool=false;
-        var r:Int;
-        var g:Int;
-        var b:Int;
+        var r:Int=0;
+        var g:Int=0;
+        var b:Int=0;
+        var color:UIColor=UIColor.black;
     }
     
     private var lastString="";
@@ -44,6 +45,8 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     private var yahooWords:[word]=[];
     private var googleWords:[word]=[];
+    
+    private var timer=Timer();
     
     /*
     private var lastResult:String="";
@@ -88,6 +91,13 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
                 }
             }
         }
+        
+        //display loop
+        timer=Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: {(timer)in
+            self.display();
+            //print("Loop");
+        })
+        
     }
     
     private func startRecording() throws {
@@ -114,6 +124,13 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         // A recognition task represents a speech recognition session.
         // We keep a reference to the task so that it can be cancelled.
         print("RECOGNITION TASK");
+        
+        //init
+        yahooWords=[];
+        googleWords=[];
+        lastString="";
+        nowString="";
+        
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
             var isFinal = false
             
@@ -126,12 +143,40 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
                     //self.textView.text = self.nowString;
                     
                     //display results
-                    self.display();
+                    //self.display();
                     //
                     print("Best:"+self.nowString);
                     //self.display();
+                    
+                    //https://dev.classmethod.jp/smartphone/iphone/swift-3-how-to-use-gcd-api-1/
+                    // キューを生成してサブスレッドで実行
+                    DispatchQueue(label: "jp.classmethod.app.queue").async {
+                        self.yahoo(text:self.nowString)
+                        //self.google(text:self.nowString);
+                        
+                        /*
+                        for yahooWord in self.yahooWords{
+                            self.googleTwo(surface:yahooWord.surface,baseform:yahooWord.baseform);
+                        }
+ */
+                        
+                        // メインスレッドで実行
+                        DispatchQueue.main.async {
+                            //self.display();
+                        }
+                    }
+ 
+                    
+                    /*
                     self.yahoo(text:self.nowString)
                     //self.google(text:self.nowString);
+                    
+                    for yahooWord in self.yahooWords{
+                        self.googleTwo(surface:yahooWord.surface,baseform:yahooWord.baseform);
+                    }
+                    
+                    self.display();
+                    */
                     
                 }
                 
@@ -167,7 +212,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         print("Yahoo Query:"+text);
         let queryItems = [URLQueryItem(name: "text", value: text)]
         urlSessionGetClientYahoo.getWithCallback(url: "https://us-central1-helloworld-8aa1d.cloudfunctions.net/yahoo", queryItems: queryItems,function:yahooCallback)
-
+        return;
     }
     
     private func yahooCallback(resultString:String){
@@ -197,7 +242,11 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
                     let baseform:String=result["baseform"] as! String;
                     let pos:String=result["pos"] as! String;
                     
-                    let temp=word(surface:surface,baseform:baseform,pos:pos,url:"",isError:false,r:0,g:0,b:0);
+                    var temp=word();
+                    temp.surface=surface;
+                    temp.baseform=baseform;
+                    temp.pos=pos;
+                    
                     self.yahooWords.append(temp);
                     
                     print("YahooCallBack: NEW WORD:"+surface+":"+baseform+":"+pos);
@@ -205,7 +254,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
                     
                     
                     //google(text:surface);
-                    //google(surface:surface,baseform:baseform);
+                    googleTwo(surface:surface,baseform:baseform);
                     /*
                     let queryItems = [URLQueryItem(name: "text", value: result)]
                     print("google Query:"+result);
@@ -214,9 +263,11 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
                 }
                 //do nothing if the result word is already there
             }
+            return;
             
         }catch{
             print(error);
+            return;
         }
     }
     
@@ -225,6 +276,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         let queryItems = [URLQueryItem(name: "text", value: text)]
         print("google Query:"+text);
         urlSessionGetClientGoogle.getWithCallback(url: "https://us-central1-helloworld-8aa1d.cloudfunctions.net/gToD", queryItems: queryItems,function:googleCallback)
+        return;
     }
 
     
@@ -254,18 +306,83 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
             print("Google Text:"+text);
             print("Google r:"+String(r)+" g:"+String(g)+" b:"+String(b));
             
-            setColor(text:text,r:r,g:g,b:b);
+            return;
         }catch{
             print(error);
+            return;
         }
-        
     }
     
-    func setColor(text:String,r:Int,g:Int,b:Int){
-        
+    // MARK: Google and Dominat Color
+    private func googleTwo(surface:String,baseform:String){
+        let queryItems = [URLQueryItem(name: "surface", value: surface),URLQueryItem(name: "baseform", value: baseform)]
+        print("google Query:"+surface+":"+baseform);
+        urlSessionGetClientGoogle.getWithCallback(url: "https://us-central1-helloworld-8aa1d.cloudfunctions.net/gToD2", queryItems: queryItems,function:googleCallbackTwo)
+        return;
     }
+    
+    
+    private func googleCallbackTwo(resultString:String){
+        print("google Result:"+resultString);
+        let resultData: Data =  resultString.data(using: String.Encoding.utf8)!
+        do{
+            let resultJson = try JSONSerialization.jsonObject(with: resultData, options: JSONSerialization.ReadingOptions.allowFragments)
+            
+            let resultDict = resultJson as! NSDictionary;
+            
+            let surface:String=resultDict["surface"] as! String;
+            let baseform:String=resultDict["baseform"] as! String;
+            
+            let url:String=resultDict["url"] as! String;
+            /*
+             let r:Int=Int(floor(resultDict["r"] as! Float));
+             let g:Int=Int(floor(resultDict["g"] as! Float));
+             let b:Int=Int(floor(resultDict["b"] as! Float));
+             */
+            let r:Int=resultDict["r"] as! Int;
+            let g:Int=resultDict["g"] as! Int;
+            let b:Int=resultDict["b"] as! Int;
+            
+            
+            print("Google Text:"+surface+":"+baseform);
+            print("Google r:"+String(r)+" g:"+String(g)+" b:"+String(b));
+            
+            //setColor(text:text,r:r,g:g,b:b);
+            //redunduncy check
+            var isAlreadyHere=false;
+            for temp in self.googleWords{
+                if(temp.surface == surface){
+                    isAlreadyHere=true;
+                }
+            }
+            
+            if(!isAlreadyHere){
+                
+                var temp=word();
+                temp.surface=surface;
+                temp.baseform=baseform;
+                temp.url=url;
+                temp.r=r;
+                temp.g=g;
+                temp.b=b;
+                temp.color=getUIColor(r:r,g:g,b:b);
+                self.googleWords.append(temp);
+                
+                print("GoogleCallBack: NEW WORD:"+surface+":"+String(r)+":"+String(g)+":"+String(b));
+                //self.display();
+            }
+            return;
+        }catch{
+            print(error);
+            return;
+        }
+    }
+    
     
     private func display(){
+        if(lastString=="" && nowString==""){
+            return;
+        }
         //https://re-engines.com/2017/09/20/swift-3-%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88%E3%81%AE%E8%A3%85%E9%A3%BE%EF%BC%88%E3%83%95%E3%82%A9%E3%83%B3%E3%83%88%E3%83%BB%E6%96%87%E5%AD%97%E3%82%B5%E3%82%A4%E3%82%BA%E3%83%BB%E6%96%87%E5%AD%97/
         
         let attribute = [NSFontAttributeName: UIFont.systemFont(ofSize: 35)]
@@ -288,7 +405,14 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         //set color on google results
         for googleWord in googleWords{
-            
+            if let range = self.nowString.range(of:googleWord.surface){
+                
+                var colorAttr=[NSForegroundColorAttributeName:googleWord.color]
+                //https://stackoverflow.com/questions/27040924/nsrange-from-swift-range
+                displayString.addAttributes(colorAttr, range:NSRange(range,in:self.nowString))
+            }else{
+                continue;
+            }
         }
        
         
@@ -296,24 +420,6 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         self.textView.attributedText = displayString;
     }
     
-    func query(address: String) -> String {
-        let url = URL(string: address)
-        let semaphore = DispatchSemaphore(value: 0)
-        
-        var result: String = ""
-        
-        let task = URLSession.shared.dataTask(with: url!) {(data, response, error) in
-            result = String(data: data!, encoding: String.Encoding.utf8)!
-            semaphore.signal()
-        }
-        
-        task.resume()
-        semaphore.wait()
-        return result
-    }
-    
-    
-
     // MARK: SFSpeechRecognizerDelegate
     
     public func speechRecognizer(_ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool) {
@@ -336,83 +442,21 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
             recordButton.setTitle("Stopping", for: .disabled)
         } else {
             try! self.startRecording()
-            recordButton.setTitle("Stop recording", for: [])
+            recordButton.setTitle("SPEAK!", for: [])
         }
     }
+    
+    private func getUIColor(r:Int,g:Int,b:Int) -> UIColor{
+        let color:UIColor=UIColor(
+            red:CGFloat(Float(r)/Float(255.0)),
+            green:CGFloat(Float(g)/Float(255.0)),
+            blue:CGFloat(Float(b)/Float(255.0)),
+            alpha:CGFloat(1.0)
+        );
+        return color;
+    }
+        
 }
 
-//https://qiita.com/yutailang0119/items/ab400cb7158295a9c171
-class URLSessionGetClient {
-    var result:String="";
-    
-    func get(url urlString: String, queryItems: [URLQueryItem]? = nil)->String {
-        var compnents = URLComponents(string: urlString)
-        compnents?.queryItems = queryItems
-        let url = compnents?.url
-        
-        //self.result="";
-        
-        for temp in queryItems!{
-            print("URLSessionGetClient:Query"+temp.name+":"+temp.value!);
-        }
-       
-        let task = URLSession.shared.dataTask(with: url!){ data, response, error in
-            if let data = data, let response = response {
-                //print(response);
-                self.result=String(data: data, encoding: String.Encoding.utf8) ?? "";
-                print("URLSessionGetClient:Result"+self.result)
-                /*
-                do {
-                    let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.allowFragments)
-                    print(json)
-                } catch {
-                    print("Serialize Error")
-                }
-                */
-                
-            } else {
-                print(error ?? "Error")
-            }
-        }
-        
-        task.resume()
-        //print("Get3:"+self.result)
-        return self.result;
-    }
-    
-    func getWithCallback(url urlString: String, queryItems: [URLQueryItem]? = nil,function:@escaping (String)->Void) {
-        var compnents = URLComponents(string: urlString)
-        compnents?.queryItems = queryItems
-        let url = compnents?.url
-        
-        //self.result="";
-        
-        for temp in queryItems!{
-            print("URLSessionGetClient:Query"+temp.name+":"+temp.value!);
-        }
-        
-        let task = URLSession.shared.dataTask(with: url!){ data, response, error in
-            if let data = data, let response = response {
-                //print(response);
-                self.result=String(data: data, encoding: String.Encoding.utf8) ?? "";
-                print("URLSessionGetClient:Result"+self.result)
-                function(self.result);
-                /*
-                 do {
-                 let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.allowFragments)
-                 print(json)
-                 } catch {
-                 print("Serialize Error")
-                 }
-                 */
-                
-            } else {
-                print(error ?? "Error")
-            }
-        }
-        task.resume()
-    }
-    
-}
 
 
