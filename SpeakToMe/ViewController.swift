@@ -28,12 +28,29 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
     private let urlSessionGetClientYahoo = URLSessionGetClient()
     private let urlSessionGetClientGoogle = URLSessionGetClient()
     
-    struct word{
+    //yahoo word
+    struct yWord{
         var surface:String="";
         var baseform:String="";
         var pos:String="";
+    }
+    
+    //google word
+    struct gWord{
+        var surface:String="";
+        var baseform:String="";
         var url:String="";
-        var isError:Bool=false;
+        var r:Int=0;
+        var g:Int=0;
+        var b:Int=0;
+        var color:UIColor=UIColor.black;
+    }
+    
+    //colored word
+    struct cWord{
+        var startIndex:Int=0;
+        var wordLength:Int=0;
+        
         var r:Int=0;
         var g:Int=0;
         var b:Int=0;
@@ -43,8 +60,9 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
     private var lastString="";
     private var nowString="";
     
-    private var yahooWords:[word]=[];
-    private var googleWords:[word]=[];
+    private var yahooWords:[yWord]=[];
+    private var googleWords:[gWord]=[];
+    private var coloredWords:[cWord]=[];
     
     private var timer=Timer();
     
@@ -128,6 +146,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         //init
         yahooWords=[];
         googleWords=[];
+        coloredWords=[];
         lastString="";
         nowString="";
         
@@ -140,44 +159,22 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
                 self.nowString=result.bestTranscription.formattedString;
                 
                 if(self.lastString != self.nowString){
-                    //self.textView.text = self.nowString;
-                    
-                    //display results
-                    //self.display();
-                    //
                     print("Best:"+self.nowString);
-                    //self.display();
                     
+                    //start callback chain
+                    self.yahoo(text:self.nowString);
+                    
+                    /*
                     //https://dev.classmethod.jp/smartphone/iphone/swift-3-how-to-use-gcd-api-1/
                     // キューを生成してサブスレッドで実行
                     DispatchQueue(label: "jp.classmethod.app.queue").async {
                         self.yahoo(text:self.nowString)
-                        //self.google(text:self.nowString);
-                        
-                        /*
-                        for yahooWord in self.yahooWords{
-                            self.googleTwo(surface:yahooWord.surface,baseform:yahooWord.baseform);
-                        }
- */
-                        
                         // メインスレッドで実行
                         DispatchQueue.main.async {
                             //self.display();
                         }
                     }
- 
-                    
-                    /*
-                    self.yahoo(text:self.nowString)
-                    //self.google(text:self.nowString);
-                    
-                    for yahooWord in self.yahooWords{
-                        self.googleTwo(surface:yahooWord.surface,baseform:yahooWord.baseform);
-                    }
-                    
-                    self.display();
                     */
-                    
                 }
                 
                 isFinal = result.isFinal
@@ -242,7 +239,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
                     let baseform:String=result["baseform"] as! String;
                     let pos:String=result["pos"] as! String;
                     
-                    var temp=word();
+                    var temp=yWord();
                     temp.surface=surface;
                     temp.baseform=baseform;
                     temp.pos=pos;
@@ -254,7 +251,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
                     
                     
                     //google(text:surface);
-                    googleTwo(surface:surface,baseform:baseform);
+                    google(surface:surface,baseform:baseform);
                     /*
                     let queryItems = [URLQueryItem(name: "text", value: result)]
                     print("google Query:"+result);
@@ -272,57 +269,15 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
     
     // MARK: Google and Dominat Color
-    private func google(text:String){
-        let queryItems = [URLQueryItem(name: "text", value: text)]
-        print("google Query:"+text);
-        urlSessionGetClientGoogle.getWithCallback(url: "https://us-central1-helloworld-8aa1d.cloudfunctions.net/gToD", queryItems: queryItems,function:googleCallback)
-        return;
-    }
-
-    
-    private func googleCallback(resultString:String){
-        print("google Result:"+resultString);
-        let resultData: Data =  resultString.data(using: String.Encoding.utf8)!
-        do{
-            let resultJson = try JSONSerialization.jsonObject(with: resultData, options: JSONSerialization.ReadingOptions.allowFragments)
-            
-            let resultDict = resultJson as! NSDictionary;
-            
-            //let surface:String=resultDict["surface"] as! String;
-            //let baseform:String=resultDict["baseform"] as! String;
-            let text:String=resultDict["text"] as! String;
-            
-            let url:String=resultDict["url"] as! String;
-            /*
-            let r:Int=Int(floor(resultDict["r"] as! Float));
-            let g:Int=Int(floor(resultDict["g"] as! Float));
-            let b:Int=Int(floor(resultDict["b"] as! Float));
-             */
-            let r:Int=resultDict["r"] as! Int;
-            let g:Int=resultDict["g"] as! Int;
-            let b:Int=resultDict["b"] as! Int;
-
-            
-            print("Google Text:"+text);
-            print("Google r:"+String(r)+" g:"+String(g)+" b:"+String(b));
-            
-            return;
-        }catch{
-            print(error);
-            return;
-        }
-    }
-    
-    // MARK: Google and Dominat Color
-    private func googleTwo(surface:String,baseform:String){
+    private func google(surface:String,baseform:String){
         let queryItems = [URLQueryItem(name: "surface", value: surface),URLQueryItem(name: "baseform", value: baseform)]
         print("google Query:"+surface+":"+baseform);
-        urlSessionGetClientGoogle.getWithCallback(url: "https://us-central1-helloworld-8aa1d.cloudfunctions.net/gToD2", queryItems: queryItems,function:googleCallbackTwo)
+        urlSessionGetClientGoogle.getWithCallback(url: "https://us-central1-helloworld-8aa1d.cloudfunctions.net/gToD2", queryItems: queryItems,function:googleCallback)
         return;
     }
     
     
-    private func googleCallbackTwo(resultString:String){
+    private func googleCallback(resultString:String){
         print("google Result:"+resultString);
         let resultData: Data =  resultString.data(using: String.Encoding.utf8)!
         do{
@@ -358,7 +313,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
             
             if(!isAlreadyHere){
                 
-                var temp=word();
+                var temp=gWord();
                 temp.surface=surface;
                 temp.baseform=baseform;
                 temp.url=url;
@@ -377,7 +332,6 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
             return;
         }
     }
-    
     
     private func display(){
         if(lastString=="" && nowString==""){
@@ -403,19 +357,29 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         }
         //
         
+        /*
         //set color on google results
         for googleWord in googleWords{
             if let range = self.nowString.range(of:googleWord.surface){
-                
-                var colorAttr=[NSForegroundColorAttributeName:googleWord.color]
+                let  colorAttr=[NSForegroundColorAttributeName:googleWord.color]
                 //https://stackoverflow.com/questions/27040924/nsrange-from-swift-range
                 displayString.addAttributes(colorAttr, range:NSRange(range,in:self.nowString))
             }else{
                 continue;
             }
         }
-       
+         */
         
+        //set color on google results: multiple
+        for googleWord in googleWords{
+            let ranges=nowString.rangesOfOccurances(of:googleWord.surface);
+            //let wordLength=googleWord.surface.count;
+            let colorAttr=[NSBackgroundColorAttributeName :googleWord.color,]
+            for range in ranges{
+                displayString.addAttributes(colorAttr, range:NSRange(range,in:self.nowString))
+            }
+        }
+       
         //self.textView.text = self.nowString;
         self.textView.attributedText = displayString;
     }

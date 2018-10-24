@@ -13,6 +13,7 @@
 		7539A4781CE7A57600505E8B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7539A4771CE7A57600505E8B /* Assets.xcassets */; };
 		7539A47B1CE7A57600505E8B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7539A4791CE7A57600505E8B /* LaunchScreen.storyboard */; };
 		8CBF1DE5218027B500EE22E3 /* URLSessionGetClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CBF1DE4218027B500EE22E3 /* URLSessionGetClient.swift */; };
+		8CBF1DE72180993500EE22E3 /* StringExtention.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CBF1DE62180993500EE22E3 /* StringExtention.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		7539A47A1CE7A57600505E8B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7539A47C1CE7A57600505E8B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8CBF1DE4218027B500EE22E3 /* URLSessionGetClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionGetClient.swift; sourceTree = "<group>"; };
+		8CBF1DE62180993500EE22E3 /* StringExtention.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtention.swift; sourceTree = "<group>"; };
 		B56B3B031CEB85E1001766E2 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -63,6 +65,7 @@
 				7539A4701CE7A57600505E8B /* AppDelegate.swift */,
 				7539A4721CE7A57600505E8B /* ViewController.swift */,
 				8CBF1DE4218027B500EE22E3 /* URLSessionGetClient.swift */,
+				8CBF1DE62180993500EE22E3 /* StringExtention.swift */,
 				7539A4741CE7A57600505E8B /* Main.storyboard */,
 				7539A4771CE7A57600505E8B /* Assets.xcassets */,
 				7539A4791CE7A57600505E8B /* LaunchScreen.storyboard */,
@@ -145,6 +148,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7539A4731CE7A57600505E8B /* ViewController.swift in Sources */,
+				8CBF1DE72180993500EE22E3 /* StringExtention.swift in Sources */,
 				7539A4711CE7A57600505E8B /* AppDelegate.swift in Sources */,
 				8CBF1DE5218027B500EE22E3 /* URLSessionGetClient.swift in Sources */,
 			);
