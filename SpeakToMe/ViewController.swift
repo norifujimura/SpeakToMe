@@ -25,6 +25,11 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     @IBOutlet var recordButton : UIButton!
     
+    @IBOutlet weak var theView: UIView!
+    
+    let width = UIScreen.main.bounds.size.width
+    let height = UIScreen.main.bounds.size.height
+    
     private let urlSessionGetClientYahoo = URLSessionGetClient()
     private let urlSessionGetClientGoogle = URLSessionGetClient()
     
@@ -48,23 +53,40 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     //colored word
     struct cWord{
-        var startIndex:Int=0;
-        var wordLength:Int=0;
-        
+        var surface:String="";
+        var range:Range<String.Index>;
         var r:Int=0;
         var g:Int=0;
         var b:Int=0;
         var color:UIColor=UIColor.black;
     }
     
+    struct sWord{
+        var surface:String="";
+        var r:Int=0;
+        var g:Int=0;
+        var b:Int=0;
+        /*
+        var h:Int=0;
+        var s:Int=0;
+        var br:Int=0;
+         */
+        var color:UIColor=UIColor.black;
+    }
+    
     private var lastString="";
     private var nowString="";
+    private let DISPLAY_STRING_LENGTH=120;
     
     private var yahooWords:[yWord]=[];
     private var googleWords:[gWord]=[];
     private var coloredWords:[cWord]=[];
+    private var sendWords:[sWord]=[];
+    private let SEND_WORDS_LENGTH=3;
     
     private var timer=Timer();
+    
+    private var drawView:DrawView=DrawView();
     
     /*
     private var lastResult:String="";
@@ -77,6 +99,10 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     public override func viewDidLoad() {
         super.viewDidLoad()
+        
+        drawView = DrawView(frame: theView.bounds)
+        drawView.backgroundColor = UIColor.white
+        theView.addSubview(drawView)
         
         // Disable the record buttons until authorization has been granted.
         recordButton.isEnabled = false
@@ -247,16 +273,8 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
                     self.yahooWords.append(temp);
                     
                     print("YahooCallBack: NEW WORD:"+surface+":"+baseform+":"+pos);
-                    //self.display();
                     
-                    
-                    //google(text:surface);
                     google(surface:surface,baseform:baseform);
-                    /*
-                    let queryItems = [URLQueryItem(name: "text", value: result)]
-                    print("google Query:"+result);
-                    let result=urlSessionGetClientGoogle.getWithCallback(url: "https://us-central1-helloworld-8aa1d.cloudfunctions.net/gToD", queryItems: queryItems,function:googleCallback)
-                    */
                 }
                 //do nothing if the result word is already there
             }
@@ -337,10 +355,60 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         if(lastString=="" && nowString==""){
             return;
         }
+        
+        //sort out colored words for internal use///////////////////////
+        coloredWords=[];
+        sendWords=[];
+        
+        for googleWord in googleWords{
+            let ranges=nowString.rangesOfOccurances(of:googleWord.surface);
+            for range in ranges{
+                let temp=cWord(surface:googleWord.surface, range:range,r:googleWord.r,g:googleWord.g,b:googleWord.b,color:googleWord.color);
+                coloredWords.append(temp);
+            }
+        }
+        coloredWords.sort(by: {$0.range.lowerBound<$1.range.lowerBound});
+        
+        if(coloredWords.count==1){
+            let temp=coloredWords[coloredWords.count-1];
+            let sendWord=sWord(surface:temp.surface,r:temp.r,g:temp.g,b:temp.b,color:temp.color);
+            sendWords.append(sendWord);
+            print("last word:"+sendWord.surface);
+            
+            //update screen
+            drawView.setColor(c: temp.color);
+            //https://www.hackingwithswift.com/example-code/uikit/how-to-force-a-uiview-to-redraw-setneedsdisplay
+            drawView.setNeedsDisplay();
+        }
+        
+        if(coloredWords.count>1){
+            let tempOne=coloredWords[coloredWords.count-1];
+            let tempTwo=coloredWords[coloredWords.count-2];
+            
+            let sendWordOne=sWord(surface:tempOne.surface,r:tempOne.r,g:tempOne.g,b:tempOne.b,color:tempOne.color);
+            sendWords.append(sendWordOne);
+            
+            let sendWordTwo=sWord(surface:tempTwo.surface,r:tempTwo.r,g:tempTwo.g,b:tempTwo.b,color:tempTwo.color);
+            sendWords.append(sendWordTwo);
+            print("last word:"+sendWordOne.surface);
+            
+            //update screen
+            drawView.setColor(cOne: tempOne.color,cTwo:tempTwo.color);
+            //https://www.hackingwithswift.com/example-code/uikit/how-to-force-a-uiview-to-redraw-setneedsdisplay
+            drawView.setNeedsDisplay();
+        }
+        /////////////////////////////////////////
+        
+        var displayString:String=nowString;
+        
+        if(displayString.count>DISPLAY_STRING_LENGTH){
+            displayString=String(displayString.suffix(DISPLAY_STRING_LENGTH));
+        }
+        
         //https://re-engines.com/2017/09/20/swift-3-%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88%E3%81%AE%E8%A3%85%E9%A3%BE%EF%BC%88%E3%83%95%E3%82%A9%E3%83%B3%E3%83%88%E3%83%BB%E6%96%87%E5%AD%97%E3%82%B5%E3%82%A4%E3%82%BA%E3%83%BB%E6%96%87%E5%AD%97/
         
         let attribute = [NSFontAttributeName: UIFont.systemFont(ofSize: 35)]
-        let displayString = NSMutableAttributedString(string:self.nowString,attributes:attribute);
+        let displayMutableString = NSMutableAttributedString(string:displayString,attributes:attribute);
         
         let underLineAttr = [NSUnderlineStyleAttributeName: NSUnderlineStyle.styleSingle.rawValue,
                              NSUnderlineColorAttributeName: UIColor.black] as [String : Any];
@@ -348,40 +416,27 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         //underline yahoo results
         for yahooWord in yahooWords{
             //https://qiita.com/HIRO-NET/items/b9720ccb3c86e85e5872#%E4%BB%BB%E6%84%8F%E3%81%AE%E6%96%87%E5%AD%97%E5%88%97%E3%82%92%E6%A4%9C%E7%B4%A2%E3%81%99%E3%82%8B
-            if let range = self.nowString.range(of:yahooWord.surface){
+            if let range = displayString.range(of:yahooWord.surface){
                 //https://stackoverflow.com/questions/27040924/nsrange-from-swift-range
-                displayString.addAttributes(underLineAttr, range:NSRange(range,in:self.nowString))
+                displayMutableString.addAttributes(underLineAttr, range:NSRange(range,in:displayString))
             }else{
                 continue;
             }
         }
         //
         
-        /*
-        //set color on google results
-        for googleWord in googleWords{
-            if let range = self.nowString.range(of:googleWord.surface){
-                let  colorAttr=[NSForegroundColorAttributeName:googleWord.color]
-                //https://stackoverflow.com/questions/27040924/nsrange-from-swift-range
-                displayString.addAttributes(colorAttr, range:NSRange(range,in:self.nowString))
-            }else{
-                continue;
-            }
-        }
-         */
-        
         //set color on google results: multiple
         for googleWord in googleWords{
-            let ranges=nowString.rangesOfOccurances(of:googleWord.surface);
+            let ranges=displayString.rangesOfOccurances(of:googleWord.surface);
             //let wordLength=googleWord.surface.count;
             let colorAttr=[NSBackgroundColorAttributeName :googleWord.color,]
             for range in ranges{
-                displayString.addAttributes(colorAttr, range:NSRange(range,in:self.nowString))
+                displayMutableString.addAttributes(colorAttr, range:NSRange(range,in:displayString))
             }
         }
        
         //self.textView.text = self.nowString;
-        self.textView.attributedText = displayString;
+        self.textView.attributedText = displayMutableString;
     }
     
     // MARK: SFSpeechRecognizerDelegate

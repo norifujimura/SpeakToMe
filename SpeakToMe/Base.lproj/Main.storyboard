@@ -21,8 +21,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" pagingEnabled="YES" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="prE-ge-ovy">
-                                <rect key="frame" x="16" y="20" width="343" height="589"/>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" pagingEnabled="YES" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="prE-ge-ovy">
+                                <rect key="frame" x="16" y="20" width="343" height="487"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="40"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
@@ -35,6 +35,11 @@
                                     <action selector="recordButtonTapped" destination="BYZ-38-t0r" eventType="touchUpInside" id="Ugn-XV-Kkw"/>
                                 </connections>
                             </button>
+                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Pyi-s8-Tc3" userLabel="theView">
+                                <rect key="frame" x="16" y="515" width="343" height="74"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -50,6 +55,7 @@
                     <connections>
                         <outlet property="recordButton" destination="7xe-MP-Nm9" id="WtH-Dp-x5U"/>
                         <outlet property="textView" destination="prE-ge-ovy" id="xF3-eW-DoN"/>
+                        <outlet property="theView" destination="Pyi-s8-Tc3" id="h0T-z9-7gP"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
