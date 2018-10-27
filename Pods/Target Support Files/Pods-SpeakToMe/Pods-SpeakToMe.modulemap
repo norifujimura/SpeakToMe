@@ -1,0 +1,6 @@
+framework module Pods_SpeakToMe {
+  umbrella header "Pods-SpeakToMe-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -16,9 +16,12 @@
 		8CBF1DE72180993500EE22E3 /* StringExtention.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CBF1DE62180993500EE22E3 /* StringExtention.swift */; };
 		8CBF1DE92181F20900EE22E3 /* RGBtoHUE.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CBF1DE82181F20900EE22E3 /* RGBtoHUE.swift */; };
 		8CBF1DEB21828F4C00EE22E3 /* DrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CBF1DEA21828F4C00EE22E3 /* DrawView.swift */; };
+		EC6EF85B3EA09AB114C57ABF /* Pods_SpeakToMe.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E131ED483749843F8C0B236 /* Pods_SpeakToMe.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3E131ED483749843F8C0B236 /* Pods_SpeakToMe.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SpeakToMe.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		48A34136024A551BED4A2237 /* Pods-SpeakToMe.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SpeakToMe.debug.xcconfig"; path = "Target Support Files/Pods-SpeakToMe/Pods-SpeakToMe.debug.xcconfig"; sourceTree = "<group>"; };
 		7539A46D1CE7A57600505E8B /* SpeakToMe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpeakToMe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7539A4701CE7A57600505E8B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7539A4721CE7A57600505E8B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -31,6 +34,7 @@
 		8CBF1DE82181F20900EE22E3 /* RGBtoHUE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RGBtoHUE.swift; sourceTree = "<group>"; };
 		8CBF1DEA21828F4C00EE22E3 /* DrawView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawView.swift; sourceTree = "<group>"; };
 		B56B3B031CEB85E1001766E2 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		B9A38F98986A49DE1B911E67 /* Pods-SpeakToMe.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SpeakToMe.release.xcconfig"; path = "Target Support Files/Pods-SpeakToMe/Pods-SpeakToMe.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -38,18 +42,31 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC6EF85B3EA09AB114C57ABF /* Pods_SpeakToMe.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		15F6772F2BC85D66E0AE5B66 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				48A34136024A551BED4A2237 /* Pods-SpeakToMe.debug.xcconfig */,
+				B9A38F98986A49DE1B911E67 /* Pods-SpeakToMe.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		7539A4641CE7A57600505E8B = {
 			isa = PBXGroup;
 			children = (
 				B56B3B031CEB85E1001766E2 /* README.md */,
 				7539A46F1CE7A57600505E8B /* SpeakToMe */,
 				7539A46E1CE7A57600505E8B /* Products */,
+				15F6772F2BC85D66E0AE5B66 /* Pods */,
+				8F6918263477E50E78D3A06E /* Frameworks */,
 			);
 			indentWidth = 4;
 			sourceTree = "<group>";
@@ -80,6 +97,14 @@
 			path = SpeakToMe;
 			sourceTree = "<group>";
 		};
+		8F6918263477E50E78D3A06E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3E131ED483749843F8C0B236 /* Pods_SpeakToMe.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -87,9 +112,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7539A47F1CE7A57600505E8B /* Build configuration list for PBXNativeTarget "SpeakToMe" */;
 			buildPhases = (
+				4A5FCAD9048201CC487F395F /* [CP] Check Pods Manifest.lock */,
 				7539A4691CE7A57600505E8B /* Sources */,
 				7539A46A1CE7A57600505E8B /* Frameworks */,
 				7539A46B1CE7A57600505E8B /* Resources */,
+				1109490E5C3866B5FDE5CB07 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -147,6 +174,53 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		1109490E5C3866B5FDE5CB07 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-SpeakToMe/Pods-SpeakToMe-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/SwiftOSC/SwiftOSC.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftOSC.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-SpeakToMe/Pods-SpeakToMe-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		4A5FCAD9048201CC487F395F /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-SpeakToMe-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		7539A4691CE7A57600505E8B /* Sources */ = {
@@ -275,6 +349,7 @@
 		};
 		7539A4801CE7A57600505E8B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 48A34136024A551BED4A2237 /* Pods-SpeakToMe.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -289,6 +364,7 @@
 		};
 		7539A4811CE7A57600505E8B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B9A38F98986A49DE1B911E67 /* Pods-SpeakToMe.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
