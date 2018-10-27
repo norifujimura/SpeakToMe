@@ -87,6 +87,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
     private var timer=Timer();
     
     private var drawView:DrawView=DrawView();
+    private var osc:OSC=OSC();
     
     /*
     private var lastResult:String="";
@@ -379,6 +380,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
             drawView.setColor(c: temp.color);
             //https://www.hackingwithswift.com/example-code/uikit/how-to-force-a-uiview-to-redraw-setneedsdisplay
             drawView.setNeedsDisplay();
+            osc.send();
         }
         
         if(coloredWords.count>1){
@@ -396,6 +398,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
             drawView.setColor(cOne: tempOne.color,cTwo:tempTwo.color);
             //https://www.hackingwithswift.com/example-code/uikit/how-to-force-a-uiview-to-redraw-setneedsdisplay
             drawView.setNeedsDisplay();
+            osc.send();
         }
         /////////////////////////////////////////
         
