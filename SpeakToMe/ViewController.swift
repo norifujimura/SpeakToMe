@@ -61,33 +61,22 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         var color:UIColor=UIColor.black;
     }
     
-    struct sWord{
-        var surface:String="";
-        var r:Int=0;
-        var g:Int=0;
-        var b:Int=0;
-        /*
-        var h:Int=0;
-        var s:Int=0;
-        var br:Int=0;
-         */
-        var color:UIColor=UIColor.black;
-    }
     
     private var lastString="";
     private var nowString="";
-    private let DISPLAY_STRING_LENGTH=120;
+    private let DISPLAY_STRING_LENGTH=72;
     
     private var yahooWords:[yWord]=[];
     private var googleWords:[gWord]=[];
     private var coloredWords:[cWord]=[];
-    private var sendWords:[sWord]=[];
-    private let SEND_WORDS_LENGTH=3;
+    private var lastCWordsLength=0;
+    private var nowCWordsLength=0;
     
     private var timer=Timer();
     
     private var drawView:DrawView=DrawView();
     private var osc:OSC=OSC();
+    private var appDelegate:AppDelegate = UIApplication.shared.delegate as! AppDelegate //AppDelegateのインスタンスを取得
     
     /*
     private var lastResult:String="";
@@ -104,6 +93,18 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         drawView = DrawView(frame: theView.bounds)
         drawView.backgroundColor = UIColor.white
         theView.addSubview(drawView)
+        
+        let uuid = UIDevice.current.identifierForVendor!.uuidString;
+        
+        print("UUID:",uuid);
+        
+        if(uuid=="4CF9C579-D8A0-4C6E-A8AB-45B989BE431C"){
+            osc=OSC(address:"192.168.100.110",port:3333);
+            print("PORT:4444");
+        }else{
+            osc=OSC(address:"192.168.100.110",port:4444);
+            print("PORT:3333");
+        }
         
         // Disable the record buttons until authorization has been granted.
         recordButton.isEnabled = false
@@ -138,7 +139,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         }
         
         //display loop
-        timer=Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: {(timer)in
+        timer=Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true, block: {(timer)in
             self.display();
             //print("Loop");
         })
@@ -170,12 +171,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         // We keep a reference to the task so that it can be cancelled.
         print("RECOGNITION TASK");
         
-        //init
-        yahooWords=[];
-        googleWords=[];
-        coloredWords=[];
-        lastString="";
-        nowString="";
+
         
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
             var isFinal = false
@@ -229,7 +225,16 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         try audioEngine.start()
         
-        textView.text = "(Go ahead, I'm listening)ゆっくり話しかけてみましょう。"
+        textView.text = "ゆっくり話しかけてみましょう。"
+        
+        //init
+        yahooWords=[];
+        googleWords=[];
+        coloredWords=[];
+        lastString="";
+        nowString="";
+        lastCWordsLength=0;
+        nowCWordsLength=0;
     }
     
     private func yahoo(text:String){
@@ -298,6 +303,9 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
     
     private func googleCallback(resultString:String){
         print("google Result:"+resultString);
+        if(resultString=="Error: could not handle the request"){
+            print("GOOGLECALLBACK:ERROR");
+        }
         let resultData: Data =  resultString.data(using: String.Encoding.utf8)!
         do{
             let resultJson = try JSONSerialization.jsonObject(with: resultData, options: JSONSerialization.ReadingOptions.allowFragments)
@@ -353,13 +361,18 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
     }
     
     private func display(){
+        
         if(lastString=="" && nowString==""){
+            drawView.setColor(cOne: UIColor.white,cTwo:UIColor.white);
+            //https://www.hackingwithswift.com/example-code/uikit/how-to-force-a-uiview-to-redraw-setneedsdisplay
+            drawView.setNeedsDisplay();
             return;
         }
         
+        lastCWordsLength=coloredWords.count;
+        
         //sort out colored words for internal use///////////////////////
         coloredWords=[];
-        sendWords=[];
         
         for googleWord in googleWords{
             let ranges=nowString.rangesOfOccurances(of:googleWord.surface);
@@ -370,36 +383,20 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         }
         coloredWords.sort(by: {$0.range.lowerBound<$1.range.lowerBound});
         
-        if(coloredWords.count==1){
-            let temp=coloredWords[coloredWords.count-1];
-            let sendWord=sWord(surface:temp.surface,r:temp.r,g:temp.g,b:temp.b,color:temp.color);
-            sendWords.append(sendWord);
-            print("last word:"+sendWord.surface);
-            
-            //update screen
-            drawView.setColor(c: temp.color);
-            //https://www.hackingwithswift.com/example-code/uikit/how-to-force-a-uiview-to-redraw-setneedsdisplay
-            drawView.setNeedsDisplay();
-            osc.send();
+        nowCWordsLength=coloredWords.count;
+        
+        if(coloredWords.count>0){
+            if(nowCWordsLength-lastCWordsLength>0){
+                let temp=coloredWords[coloredWords.count-1];
+                //update screen
+                drawView.setColor(c:temp.color);
+                //https://www.hackingwithswift.com/example-code/uikit/how-to-force-a-uiview-to-redraw-setneedsdisplay
+                drawView.setNeedsDisplay();
+                //osc.sendRGB(color:temp.color);
+                osc.send(color:temp.color);
+            }
         }
         
-        if(coloredWords.count>1){
-            let tempOne=coloredWords[coloredWords.count-1];
-            let tempTwo=coloredWords[coloredWords.count-2];
-            
-            let sendWordOne=sWord(surface:tempOne.surface,r:tempOne.r,g:tempOne.g,b:tempOne.b,color:tempOne.color);
-            sendWords.append(sendWordOne);
-            
-            let sendWordTwo=sWord(surface:tempTwo.surface,r:tempTwo.r,g:tempTwo.g,b:tempTwo.b,color:tempTwo.color);
-            sendWords.append(sendWordTwo);
-            print("last word:"+sendWordOne.surface);
-            
-            //update screen
-            drawView.setColor(cOne: tempOne.color,cTwo:tempTwo.color);
-            //https://www.hackingwithswift.com/example-code/uikit/how-to-force-a-uiview-to-redraw-setneedsdisplay
-            drawView.setNeedsDisplay();
-            osc.send();
-        }
         /////////////////////////////////////////
         
         var displayString:String=nowString;
@@ -410,7 +407,7 @@ public class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         
         //https://re-engines.com/2017/09/20/swift-3-%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88%E3%81%AE%E8%A3%85%E9%A3%BE%EF%BC%88%E3%83%95%E3%82%A9%E3%83%B3%E3%83%88%E3%83%BB%E6%96%87%E5%AD%97%E3%82%B5%E3%82%A4%E3%82%BA%E3%83%BB%E6%96%87%E5%AD%97/
         
-        let attribute = [NSFontAttributeName: UIFont.systemFont(ofSize: 35)]
+        let attribute = [NSFontAttributeName: UIFont.systemFont(ofSize: 70)]
         let displayMutableString = NSMutableAttributedString(string:displayString,attributes:attribute);
         
         let underLineAttr = [NSUnderlineStyleAttributeName: NSUnderlineStyle.styleSingle.rawValue,
